@@ -1,0 +1,62 @@
+syntax = "proto2";
+package dkvs;
+
+// Key/Value pair which is actually stored in the database
+message Row {
+  // `key_length` and `value_length` are deprecated
+  // (Protobuf encodings of bytes are sized)
+  optional uint64 key_length = 1;
+  optional uint64 value_length = 2;
+  required bytes key = 3;
+  required bytes value = 4;
+}
+
+// Response from server on a 'Set' request (couldn't think of anything better)
+enum StatusType {
+  OK = 0;
+  ERROR = 1;
+}
+
+message Status {
+  required StatusType status = 1;
+}
+
+// Sent from clients to router to look up server associated with key
+message RouterRequest {
+  // `key_length` is deprecated (Protobuf encodings of bytes are sized)
+  optional uint64 key_length = 1;
+  required bytes key = 2;
+}
+
+message RouterResponse {
+  // Address of server returned to client
+  // (a string is used, since that is used in RPC connections)
+  // The returned string should be a valid IP:PORT address.
+  required string address = 1;
+}
+
+// RPCs implemented by router
+service Router {
+  /**
+   * Returns a server which can handle get/set operations
+   * associated with the given key.
+   */
+  rpc GetServer (RouterRequest) returns (RouterResponse);
+}
+
+// RPCs implemented by server nodes (for use with client)
+service Server {
+  /**
+   * RPC which updates the hash table in this server with the
+   * given key/value pair. Returns a status of OK if there were
+   * no issues committing the given row.
+   */
+  rpc Set (Row) returns (Status);
+  /**
+   * RPC which returns the value in this server's table for the
+   * given key. If the key is not found, NULL is returned.
+   *
+   * Aside: Maybe `RouterRequest` should be named something else?
+   */
+  rpc Get (RouterRequest) returns (Row);
+}

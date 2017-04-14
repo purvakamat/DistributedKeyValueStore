@@ -1,0 +1,14 @@
+1. To compile the project use the make target:
+- make all
+
+2. Run multiple instaces of servers in separate terminals. Pass as argument the port number for the server to listen at:
+- ./server 8080
+
+3. Run the router in a separate terminal and configure it to use all the servers you have created:
+- ./router 8080 8081 8082
+
+4. Run the client in a separate terminal and use the prompt to get and set values to the key-value store:
+- ./client
+
+
+
